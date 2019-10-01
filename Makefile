@@ -6,9 +6,9 @@ setup:
 .PHONY: build
 build:
 	go build \
-		-o bin/mirror \
-		cmd/mirror/main.go
+		-o bin/synapse \
+		cmd/synapse/main.go
 
 .PHONY: run
 run: build
-	./bin/mirror
+	./bin/synapse
