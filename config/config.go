@@ -9,7 +9,15 @@ import (
 var Cfg *Config
 
 type Config struct {
-	Server *ServerConfig `yaml:"server"`
+	Logger   *LoggerConfig `yaml:"logger"`
+	Server   *ServerConfig `yaml:"server"`
+	Services struct {
+		Sentry *SentryConfig `yaml:"sentry"`
+	} `yaml:"services"`
+}
+
+type LoggerConfig struct {
+	Level string `yaml:"level"`
 }
 
 type ServerConfig struct {
