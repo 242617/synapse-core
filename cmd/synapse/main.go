@@ -12,6 +12,7 @@ import (
 	"github.com/242617/synapse/config"
 	"github.com/242617/synapse/log"
 	"github.com/242617/synapse/server"
+	"github.com/242617/synapse/version"
 )
 
 var (
@@ -27,7 +28,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = sentry.Init(sentry.ClientOptions{Dsn: config.Cfg.Services.Sentry.DSN})
+	err = sentry.Init(sentry.ClientOptions{
+		Dsn:         config.Cfg.Services.Sentry.DSN,
+		Environment: version.Environment,
+	})
 	if err != nil {
 		fmt.Println(errors.Wrap(err, "cannot init sentry"))
 		os.Exit(1)
@@ -41,11 +45,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	base.
+		Info().
+		Str("environment", version.Environment).
+		Msgf("start %s", version.Application)
+
 	err = server.Init(base.With().Str("unit", "server").Logger())
 	if err != nil {
 		sentry.CaptureException(err)
 		sentry.Flush(5 * time.Second)
-		fmt.Println(errors.Wrap(err, "cannot init server"))
+		base.Error().
+			Err(err).
+			Msg("cannot init server")
 		os.Exit(1)
 	}
 }
