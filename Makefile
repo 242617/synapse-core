@@ -5,7 +5,7 @@ PROJECT := github.com/242617/${APPLICATION}
 
 .PHONY: setup
 setup:
-	mkdir bin
+	mkdir -p build
 
 .PHONY: test
 test:
@@ -13,8 +13,8 @@ test:
 
 .PHONY: build
 build:
-	go build \
-		-o bin/synapse \
+	GOOS=linux GOARCH=amd64 go build \
+		-o build/synapse \
 		-ldflags "\
 			-X '${PROJECT}/version.Application=${APPLICATION}'\
 			-X '${PROJECT}/version.Environment=${ENVIRONMENT}'\
@@ -23,4 +23,10 @@ build:
 
 .PHONY: run
 run: build
-	./bin/synapse
+	./build/synapse
+
+.PHONY: stat\:build
+stat\:build:
+	GOOS=linux GOARCH=amd64 go build \
+		-o build/stat \
+		cmd/stat/main.go
