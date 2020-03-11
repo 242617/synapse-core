@@ -2,14 +2,14 @@ package log
 
 import (
 	"io"
-	"os"
 	l "log"
+	"os"
 
 	console "github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 
-	"github.com/242617/synapse/config"
+	"github.com/242617/synapse-core/config"
 )
 
 type Logger = zerolog.Logger

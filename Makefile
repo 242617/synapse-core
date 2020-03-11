@@ -1,5 +1,5 @@
 
-APPLICATION := synapse
+APPLICATION := synapse-core
 ENVIRONMENT := production
 PROJECT := github.com/242617/${APPLICATION}
 
@@ -13,18 +13,19 @@ test:
 
 .PHONY: build
 build:
-	GOOS=linux GOARCH=amd64 go build \
-		-o build/synapse \
+	go build \
+		-o build/core \
 		-ldflags "\
 			-X '${PROJECT}/version.Application=${APPLICATION}'\
 			-X '${PROJECT}/version.Environment=${ENVIRONMENT}'\
 		"\
-		cmd/synapse/main.go
+		cmd/core/main.go
 	cp config.template.yaml build/config.yaml
 
 .PHONY: run
 run: build
-	./build/synapse
+	cd build && ./core \
+		--config config.yaml
 
 
 DOCKER_CONTAINER_NAME := synapse-core

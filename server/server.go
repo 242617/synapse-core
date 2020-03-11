@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/242617/synapse/config"
-	"github.com/242617/synapse/log"
+	"github.com/242617/synapse-core/config"
+	"github.com/242617/synapse-core/log"
 )
 
 var logger log.Logger

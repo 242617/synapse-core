@@ -9,10 +9,10 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/pkg/errors"
 
-	"github.com/242617/synapse/config"
-	"github.com/242617/synapse/log"
-	"github.com/242617/synapse/server"
-	"github.com/242617/synapse/version"
+	"github.com/242617/synapse-core/config"
+	"github.com/242617/synapse-core/log"
+	"github.com/242617/synapse-core/server"
+	"github.com/242617/synapse-core/version"
 )
 
 var (
