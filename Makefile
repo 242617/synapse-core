@@ -12,8 +12,13 @@ setup:
 test:
 	go test ./...
 
+.PHONY: config
+config:
+	. ./env.sh
+	envsubst < config.template.yaml > build/config.yaml
+
 .PHONY: build
-build:
+build: config
 	go build \
 		-o build/core \
 		-ldflags "\
@@ -22,7 +27,6 @@ build:
 			-X '${PROJECT}/version.Version=${VERSION}'\
 		"\
 		cmd/core/main.go
-	cp config.template.yaml build/config.yaml
 
 .PHONY: run
 run: build
@@ -33,9 +37,8 @@ run: build
 DOCKER_CONTAINER_NAME := synapse-core
 DOCKER_IMAGE_NAME := 242617/synapse-core
 
-
 .PHONY: docker-build
-docker-build:
+docker-build: config
 	docker build \
 		--build-arg APPLICATION=${APPLICATION} \
 		--build-arg ENVIRONMENT=${ENVIRONMENT} \

@@ -4,4 +4,4 @@ server:
   address: ":8080"
 services:
   sentry:
-    dsn: https://fa93e9a20cdb4022900c7c355b778522@sentry.io/1768144
+    dsn: ${SERVICES_SENTRY_DSN}
