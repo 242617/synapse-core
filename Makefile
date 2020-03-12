@@ -61,10 +61,12 @@ docker-save:
 	du -h ${DOCKER_CONTAINER_NAME}.tar
 
 
-SYNAPSE ?= ${SYNAPSE_USER}@${SYNAPSE_HOST}
-
 .PHONY: deploy
 deploy: docker-build docker-save
-	rsync -Pav -e ssh synapse-core.tar ${SYNAPSE}:/home/synapse-core
-	ssh -t ${SYNAPSE} 'docker load -i /home/synapse-core/synapse-core.tar'
-	ssh -t ${SYNAPSE} 'systemctl restart synapse-core'
+	. ./env.sh; \
+		rsync -Pav -e ssh synapse-core.tar $${SYNAPSE_USER}@$${SYNAPSE_HOST}:/home/synapse-core; \
+		ssh -t $${SYNAPSE_USER}@$${SYNAPSE_HOST} '\
+			docker load -i /home/synapse-core/synapse-core.tar && \
+			systemctl restart synapse-core && \
+			rm /home/synapse-core/synapse-core.tar \
+		'

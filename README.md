@@ -1,4 +1,4 @@
-# synapse
+# synapse core
 
 # Systemd unit
 
