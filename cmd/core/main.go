@@ -40,7 +40,7 @@ func main() {
 	base, err := log.Create()
 	if err != nil {
 		sentry.CaptureException(err)
-		sentry.Flush(5 * time.Second)
+		defer sentry.Flush(5 * time.Second)
 		fmt.Println(errors.Wrap(err, "cannot create logger"))
 		os.Exit(1)
 	}
@@ -53,7 +53,7 @@ func main() {
 	err = server.Init(base.With().Str("unit", "server").Logger())
 	if err != nil {
 		sentry.CaptureException(err)
-		sentry.Flush(5 * time.Second)
+		defer sentry.Flush(5 * time.Second)
 		base.Error().
 			Err(err).
 			Msg("cannot init server")

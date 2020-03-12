@@ -1,4 +1,7 @@
 github.com/242617/synapse v0.0.0-20200310124205-55ef1317531b h1:DEvd+Zdmeo57mijBqMA9Xen1djYW7/HyFaAQ3gsHnyQ=
+github.com/242617/synapse-core v0.0.0-20200312122907-83bbb6fe3d21/go.mod h1:hF5J35hmK7SRqHZrcyaiAhPRZ5bm3ByIdaBsQLFxzdM=
+github.com/242617/synapse-crawler v0.0.0-20200312150435-a82b766b9e9d h1:0j3EOJJmCYiOiKiRaKVdV7wr0aVELv+FEz0AjtBbZCA=
+github.com/242617/synapse-crawler v0.0.0-20200312150435-a82b766b9e9d/go.mod h1:9IMxVm7FRzLA68AkUDQiJmoGQNHIS8dW1zPdAoSzU5E=
 github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/CloudyKit/fastprinter v0.0.0-20170127035650-74b38d55f37a/go.mod h1:EFZQ978U7x8IRnstaskI3IysnWY5Ao3QgZUKOXlsAdw=
