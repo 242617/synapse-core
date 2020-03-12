@@ -14,8 +14,7 @@ test:
 
 .PHONY: config
 config:
-	. ./env.sh
-	envsubst < config.template.yaml > build/config.yaml
+	. ./env.sh; envsubst < config.template.yaml > build/config.yaml
 
 .PHONY: build
 build: config
