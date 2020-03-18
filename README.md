@@ -18,13 +18,29 @@ ExecStop=/usr/bin/docker stop core
 WantedBy=local.target
 ```
 
-# Deploy
-
-* Build and export Docker image
-* Transfer image to host
-* Import image
-* Restart service
-
 # Implement
 
+* gRPC
+* Concourse deploy
 * https://letsencrypt.org
+
+
+# Vault
+
+## Setup
+
+```
+vault auth enable github
+vault write auth/github/config organization=synapse-service
+vault login -method=github token={{token}}
+```
+
+## Fill
+
+```
+vault kv put synapse/core foo=world excited=true
+vault kv get synapse/core
+vault kv get -field=excited synapse/core
+
+vault kv delete synapse/core
+```

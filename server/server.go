@@ -2,11 +2,13 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/242617/synapse-crawler/protocol"
 
-	"github.com/242617/synapse-core/config"
 	"github.com/242617/synapse-core/log"
 	"github.com/242617/synapse-core/version"
 )
@@ -64,6 +66,13 @@ func Init(base log.Logger) error {
 				return
 			}
 
+		case "tasks":
+			fmt.Fprintln(w, `{"name":"tasks","data":[{"type":"pull","resource":"__debug__"}]}`)
+
+		case "__debug__":
+			rand.Seed(time.Now().UnixNano())
+			fmt.Fprintf(w, `{"name":"__debug__","data":%d}`, rand.Intn(1000))
+
 		default:
 			http.Error(w, "not implemented", http.StatusNotImplemented)
 
@@ -71,6 +80,7 @@ func Init(base log.Logger) error {
 
 	})
 
-	err := http.ListenAndServe(config.Cfg.Server.Address, nil)
+	err := http.ListenAndServeTLS(":443", "synapse.core.crt", "synapse.core.key", nil)
+	// err := http.ListenAndServe(config.Cfg.Server.Address, nil)
 	return err
 }
