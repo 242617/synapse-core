@@ -22,8 +22,8 @@ config:
 
 .PHONY: proto
 proto:
-	protoc --proto_path api/proto api/proto/list.proto --go_out=plugins=grpc:api
-	protoc --proto_path api/proto api/proto/info.proto --go_out=plugins=grpc:api
+	protoc --proto_path api/proto api/proto/system.proto --go_out=plugins=grpc:api
+	protoc --proto_path api/proto api/proto/tasks.proto --go_out=plugins=grpc:api
 	# protoc --proto_path api/proto --go_out=api --plugin grpc api/proto/list.proto
 
 .PHONY: build

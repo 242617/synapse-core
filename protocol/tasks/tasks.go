@@ -1,4 +1,4 @@
-package list
+package tasks
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"github.com/242617/synapse-core/api"
 )
 
-type List struct{}
+type Tasks struct{}
 
-func (l *List) SayHello(ctx context.Context, in *api.HelloRequest) (*api.HelloReply, error) {
+func (*Tasks) SayHello(ctx context.Context, in *api.HelloRequest) (*api.HelloReply, error) {
 	fmt.Printf("Received: %v", in.Name)
 	return &api.HelloReply{Message: "Hello " + in.Name}, nil
 }

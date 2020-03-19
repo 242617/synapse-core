@@ -40,7 +40,7 @@ func main() {
 		}
 
 		// Without certificate
-		_, err := http.Get("https://synapse.local:8443/test2")
+		_, err = http.Get("https://synapse.local:8443/test2")
 		if err != nil {
 			log.Fatal(err)
 		}

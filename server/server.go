@@ -8,8 +8,8 @@ import (
 	"github.com/242617/synapse-core/api"
 	"github.com/242617/synapse-core/config"
 	"github.com/242617/synapse-core/log"
-	"github.com/242617/synapse-core/protocol/info"
-	"github.com/242617/synapse-core/protocol/list"
+	"github.com/242617/synapse-core/protocol/system"
+	"github.com/242617/synapse-core/protocol/tasks"
 )
 
 var logger log.Logger
@@ -26,8 +26,8 @@ func Init(base log.Logger) error {
 	}
 
 	server := grpc.NewServer()
-	api.RegisterSystemServer(server, &info.Info{})
-	api.RegisterListServer(server, &list.List{})
+	api.RegisterSystemServer(server, &system.System{})
+	api.RegisterTasksServer(server, &tasks.Tasks{})
 	err = server.Serve(listener)
 	if err != nil {
 		logger.Error().

@@ -1,7 +1,7 @@
 logger:
   level: debug
 server:
-  address: ":8080"
+  address: ":50051"
 services:
   sentry:
     dsn: ${SERVICES_SENTRY_DSN}

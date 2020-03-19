@@ -1,6 +1,28 @@
-# synapse core
+# Synapse core
 
-# Systemd unit
+Synapse is a service for distrubuted computation.
+
+Contains of two units – one core and several crawlers. Crawlers pulls down tasks from core and do their jobs, then sends results back.
+
+Services, technologies and frameworks may be excessive, developing for experiencing new features:
+
+| Technology | What for?                         |                    |
+|------------|-----------------------------------|--------------------|
+| Vault      | Manage secrets                    |                    |
+| gRPC       | Serializing transferring data     |                    |
+| x509       | Authenificate crawlers (mainly)   | Own rootCA and PKI |
+| Concourse  | Build and deploy                  | CI/CD              |
+
+# TODO
+
+* Vault
+* Concourse
+* https://letsencrypt.org
+* `git rev-parse HEAD`
+
+# Setup
+
+## Systemd unit
 
 ```
 [Unit]
@@ -16,31 +38,4 @@ ExecStop=/usr/bin/docker stop core
 
 [Install]
 WantedBy=local.target
-```
-
-# Implement
-
-* gRPC
-* Concourse deploy
-* https://letsencrypt.org
-
-
-# Vault
-
-## Setup
-
-```
-vault auth enable github
-vault write auth/github/config organization=synapse-service
-vault login -method=github token={{token}}
-```
-
-## Fill
-
-```
-vault kv put synapse/core foo=world excited=true
-vault kv get synapse/core
-vault kv get -field=excited synapse/core
-
-vault kv delete synapse/core
 ```

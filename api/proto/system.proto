@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package api;
+
+service System {
+	rpc Info (Void) returns (InfoResponse) {}
+	rpc Uptime(Void) returns (UptimeResponse) {}
+}
+
+message Void {}
+
+message InfoResponse {
+	string application = 1;
+	string environment = 2;
+	string version = 3;
+	string build = 4;
+}
+
+message UptimeResponse {
+	string duration = 1;
+}
