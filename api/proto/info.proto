@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package api;
+
+service System {
+	rpc Info (google.protobuf.Empty) returns (InfoResponse) {}
+}
+
+message InfoResponse {
+	string version = 1;
+}

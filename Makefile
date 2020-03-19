@@ -8,6 +8,10 @@ VERSION ?= 1.0.0
 setup:
 	mkdir -p build
 
+.PHONY: debug
+debug:
+	go run cmd/test/main.go
+
 .PHONY: test
 test:
 	go test ./...
@@ -16,8 +20,14 @@ test:
 config:
 	. ./env.sh; envsubst < config.template.yaml > build/config.yaml
 
+.PHONY: proto
+proto:
+	protoc --proto_path api/proto api/proto/list.proto --go_out=plugins=grpc:api
+	protoc --proto_path api/proto api/proto/info.proto --go_out=plugins=grpc:api
+	# protoc --proto_path api/proto --go_out=api --plugin grpc api/proto/list.proto
+
 .PHONY: build
-build: config
+build: config proto
 	go build \
 		-o build/core \
 		-ldflags "\
