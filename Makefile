@@ -8,10 +8,6 @@ VERSION ?= 1.0.0
 setup:
 	mkdir -p build
 
-.PHONY: debug
-debug:
-	go run cmd/test/main.go
-
 .PHONY: test
 test:
 	go test ./...
@@ -39,7 +35,8 @@ build: config proto
 
 .PHONY: run
 run: build
-	cd build && ./core \
+	. ./env.sh; cd build && \
+		./core \
 		--config config.yaml
 
 
@@ -68,14 +65,3 @@ docker-debug: docker-build
 docker-save:
 	docker save -o ${DOCKER_CONTAINER_NAME}.tar ${DOCKER_IMAGE_NAME}
 	du -h ${DOCKER_CONTAINER_NAME}.tar
-
-
-.PHONY: deploy
-deploy: docker-build docker-save
-	. ./env.sh; \
-		rsync -Pav -e ssh synapse-core.tar $${SYNAPSE_USER}@$${SYNAPSE_HOST}:/home/synapse-core; \
-		ssh -t $${SYNAPSE_USER}@$${SYNAPSE_HOST} '\
-			docker load -i /home/synapse-core/synapse-core.tar && \
-			systemctl restart synapse-core && \
-			rm /home/synapse-core/synapse-core.tar \
-		'
