@@ -3,5 +3,6 @@ logger:
 server:
   address: ":50051"
 services:
-  sentry:
-    dsn: ${SERVICES_SENTRY_DSN}
+  vault:
+    address: https://synapse.chill-out.ru:8200
+    path: kv/data/synapse/core

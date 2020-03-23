@@ -11,6 +11,7 @@ import (
 
 	"github.com/242617/synapse-core/config"
 	"github.com/242617/synapse-core/log"
+	"github.com/242617/synapse-core/secret"
 	"github.com/242617/synapse-core/server"
 	"github.com/242617/synapse-core/version"
 )
@@ -28,8 +29,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	err = secret.Init()
+	if err != nil {
+		fmt.Println(errors.Wrap(err, "cannot init secret"))
+		os.Exit(1)
+	}
+
 	err = sentry.Init(sentry.ClientOptions{
-		Dsn:         config.Cfg.Services.Sentry.DSN,
+		Dsn:         secret.SentryDSN,
 		Environment: version.Environment,
 	})
 	if err != nil {
