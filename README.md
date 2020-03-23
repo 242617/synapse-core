@@ -6,19 +6,13 @@ Contains of two units – one core and several crawlers. Crawlers pulls down tas
 
 Services, technologies and frameworks may be excessive, developing for experiencing new features:
 
-| Technology | What for?                         |                    |
+| Technology | What for?                         | Description        |
 |------------|-----------------------------------|--------------------|
 | Vault      | Manage secrets                    |                    |
 | gRPC       | Serializing transferring data     |                    |
-| x509       | Authenificate crawlers (mainly)   | Own rootCA and PKI |
+| OpenSSL    | Authenificate crawlers (mainly)   | Own rootCA and PKI |
 | Concourse  | Build and deploy                  | CI/CD              |
-
-# TODO
-
-* Vault
-* Concourse
-* https://letsencrypt.org
-* `git rev-parse HEAD`
+| Sentry     | Alerts                            |                    |
 
 # Setup
 
