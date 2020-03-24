@@ -12,14 +12,8 @@ ENV VERSION=${VERSION}
 
 WORKDIR /root
 COPY . .
-RUN go build \
-        -o build/core \
-        -ldflags "\
-        -X '${PROJECT}/version.Application=${APPLICATION}'\
-        -X '${PROJECT}/version.Environment=${ENVIRONMENT}'\
-        -X '${PROJECT}/version.Version=${VERSION}'\
-        "\
-        cmd/core/main.go
+RUN make proto
+RUN make build
 
 FROM alpine:3.10.2
 
