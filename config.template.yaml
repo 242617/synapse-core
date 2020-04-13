@@ -4,5 +4,5 @@ server:
   address: ":50051"
 services:
   vault:
-    address: https://synapse.chill-out.ru:8200
+    address: https://hq.chill-out.ru/vault
     path: kv/data/synapse/core

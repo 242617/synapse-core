@@ -19,6 +19,11 @@ Services, technologies and frameworks may be excessive, developing for experienc
 ## Systemd unit
 
 ```
+sudo adduser synapse-core
+sudo adduser synapse-core docker
+```
+
+```
 [Unit]
 Description=Synapse core service
 Requires=docker.service
@@ -27,7 +32,7 @@ After=docker.service
 [Service]
 User=synapse-core
 Restart=always
-ExecStart=/usr/bin/docker run --rm --name core -p 8080:8080 242617/synapse-core
+ExecStart=/usr/bin/docker run --rm --name core -p 50051:50051 242617/synapse-core
 ExecStop=/usr/bin/docker stop core
 
 [Install]
