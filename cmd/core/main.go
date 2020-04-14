@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	l "log"
 	"os"
 	"time"
 
@@ -25,13 +25,13 @@ func main() {
 
 	err := config.Init(*configFile)
 	if err != nil {
-		fmt.Println(errors.Wrap(err, "cannot init config"))
+		l.Println(errors.Wrap(err, "cannot init config"))
 		os.Exit(1)
 	}
 
 	err = secret.Init()
 	if err != nil {
-		fmt.Println(errors.Wrap(err, "cannot init secret"))
+		l.Println(errors.Wrap(err, "cannot init secret"))
 		os.Exit(1)
 	}
 
@@ -40,7 +40,7 @@ func main() {
 		Environment: version.Environment,
 	})
 	if err != nil {
-		fmt.Println(errors.Wrap(err, "cannot init sentry"))
+		l.Println(errors.Wrap(err, "cannot init sentry"))
 		os.Exit(1)
 	}
 
@@ -48,16 +48,26 @@ func main() {
 	if err != nil {
 		sentry.CaptureException(err)
 		defer sentry.Flush(5 * time.Second)
-		fmt.Println(errors.Wrap(err, "cannot create logger"))
+		l.Println(errors.Wrap(err, "cannot create logger"))
 		os.Exit(1)
 	}
+	base = base.With().Str("application", version.Application).Logger()
 
-	base.
-		Info().
+	base.Info().
 		Str("environment", version.Environment).
-		Msgf("start %s", version.Application)
+		Str("version", version.Version).
+		Str("build", version.Build).
+		Msg("start")
+
+	go func() {
+		for {
+			base.Info().Msg("alive")
+			time.Sleep(time.Minute)
+		}
+	}()
 
 	err = server.Init(base.With().Str("unit", "server").Logger())
+	// reflection.Register(server)
 	if err != nil {
 		sentry.CaptureException(err)
 		defer sentry.Flush(5 * time.Second)

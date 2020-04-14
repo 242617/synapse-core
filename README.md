@@ -31,8 +31,9 @@ After=docker.service
 
 [Service]
 User=synapse-core
+EnvironmentFile=/etc/synapse/core.env
 Restart=always
-ExecStart=/usr/bin/docker run --rm --name core -p 50051:50051 242617/synapse-core
+ExecStart=/usr/bin/docker run --rm --name core -p 50051:50051 -e TOKEN=${TOKEN} 242617/synapse-core
 ExecStop=/usr/bin/docker stop core
 
 [Install]
