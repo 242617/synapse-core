@@ -59,15 +59,7 @@ func main() {
 		Str("build", version.Build).
 		Msg("start")
 
-	go func() {
-		for {
-			base.Info().Msg("alive")
-			time.Sleep(time.Minute)
-		}
-	}()
-
 	err = server.Init(base.With().Str("unit", "server").Logger())
-	// reflection.Register(server)
 	if err != nil {
 		sentry.CaptureException(err)
 		defer sentry.Flush(5 * time.Second)

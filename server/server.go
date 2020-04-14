@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/242617/synapse-core/api"
 	"github.com/242617/synapse-core/config"
@@ -26,6 +27,7 @@ func Init(base log.Logger) error {
 	}
 
 	server := grpc.NewServer()
+	reflection.Register(server)
 	api.RegisterSystemServer(server, &system.System{})
 	api.RegisterTasksServer(server, &tasks.Tasks{})
 	err = server.Serve(listener)
