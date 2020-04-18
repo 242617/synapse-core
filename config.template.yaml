@@ -1,7 +1,9 @@
 logger:
   level: debug
-server:
+berch:
   address: ":50051"
+server:
+  address: ":8080"
 services:
   vault:
     address: https://hq.chill-out.ru/vault

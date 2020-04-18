@@ -1,0 +1,26 @@
+type Crawler {
+  id: ID!
+  createdAt: String!
+  name: String!
+  certificate: String!
+}
+
+type Label {
+  id: ID!
+  crawlerID: String!
+  name: String!
+}
+
+type Query {
+  crawlers: [Crawler!]!
+  labels: [Label!]!
+}
+
+input NewCrawler {
+  name: String!
+  certificate: String!
+}
+
+type Mutation {
+  createCrawler(input: NewCrawler!): Crawler!
+}

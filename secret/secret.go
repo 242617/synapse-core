@@ -9,33 +9,34 @@ import (
 	"github.com/242617/synapse-core/config"
 )
 
-var (
+type secret struct {
 	SentryDSN string
-)
+}
 
-func Init() error {
+func Init(config config.VaultConfig) (*secret, error) {
 
-	client, err := api.NewClient(&api.Config{Address: config.Cfg.Services.Vault.Address})
+	client, err := api.NewClient(&api.Config{Address: config.Address})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	client.SetToken(os.Getenv("TOKEN"))
 
-	secret, err := client.Logical().Read(config.Cfg.Services.Vault.Path)
+	secrets, err := client.Logical().Read(config.Path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	data, ok := secret.Data["data"].(map[string]interface{})
+	data, ok := secrets.Data["data"].(map[string]interface{})
 	if !ok {
-		return fmt.Errorf("cannot convert data")
+		return nil, fmt.Errorf("cannot convert data")
 	}
 
-	SentryDSN, ok = data["sentry_dsn"].(string)
+	var scrt secret
+	scrt.SentryDSN, ok = data["sentry_dsn"].(string)
 	if !ok {
-		return fmt.Errorf("cannot convert item")
+		return nil, fmt.Errorf("cannot convert item")
 	}
 
-	return nil
+	return &scrt, nil
 
 }

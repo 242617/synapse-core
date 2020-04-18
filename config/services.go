@@ -1,7 +1,7 @@
 package config
 
 type ServicesConfig struct {
-	Vault *VaultConfig `yaml:"vault"`
+	Vault VaultConfig `yaml:"vault"`
 }
 
 type VaultConfig struct {

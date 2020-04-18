@@ -2,7 +2,6 @@ package log
 
 import (
 	"io"
-	l "log"
 	"os"
 
 	console "github.com/mattn/go-isatty"
@@ -14,9 +13,7 @@ import (
 
 type Logger = zerolog.Logger
 
-func init() { l.SetFlags(l.Lshortfile) }
-
-func Create() (Logger, error) {
+func Create(config config.LoggerConfig) (Logger, error) {
 
 	var log Logger
 	var w io.Writer
@@ -28,7 +25,7 @@ func Create() (Logger, error) {
 		w = o
 	}
 
-	level, err := zerolog.ParseLevel(config.Cfg.Logger.Level)
+	level, err := zerolog.ParseLevel(config.Level)
 	if err != nil {
 		return log, errors.Wrap(err, "failed to parse logging level from config")
 	}
