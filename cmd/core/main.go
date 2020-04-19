@@ -5,12 +5,14 @@ import (
 	l "log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/getsentry/sentry-go"
 	"github.com/pkg/errors"
 
+	"github.com/242617/synapse-core/berth"
 	"github.com/242617/synapse-core/config"
 	"github.com/242617/synapse-core/graphql"
 	"github.com/242617/synapse-core/log"
@@ -18,6 +20,11 @@ import (
 	"github.com/242617/synapse-core/server"
 	"github.com/242617/synapse-core/types"
 	"github.com/242617/synapse-core/version"
+)
+
+const (
+	StopTimeout  = 10 * time.Second
+	StartTimeout = 10 * time.Second
 )
 
 var (
@@ -67,48 +74,87 @@ func main() {
 		Msg("start")
 	logger := base
 
-	exitCode := 1
-	defer func() { os.Exit(exitCode) }()
-
-	srv, err := server.NewServer(cfg.Server, logger.With().Str("unit", "server").Logger(), &graphql.Resolver{})
+	resolver := graphql.NewResolver()
+	srv, err := server.NewServer(cfg.Server, logger.With().Str("unit", "server").Logger(), resolver)
 	if err != nil {
 		logger.Error().Err(err).Msg("cannot create server")
 		return
 	}
 
-	err = run(srv)
+	brth, err := berth.NewServer(cfg.Berth, logger.With().Str("unit", "berth").Logger())
 	if err != nil {
-		logger.Error().Err(err).Msg("cannot run server")
+		sentry.CaptureException(err)
+		defer sentry.Flush(5 * time.Second)
+		base.Error().
+			Err(err).
+			Msg("cannot init server")
+		os.Exit(1)
+	}
+
+	exitCode := 1
+	defer func() { os.Exit(exitCode) }()
+
+	errCh := start(srv, brth)
+
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-errCh:
+		l.Println("err", err)
+		logger.Error().Err(err).Msg("cannot start servers")
+		return
+	case <-signals:
+		close(signals)
+	}
+
+	errCh = stop(srv, brth)
+	for err := range errCh {
+		logger.Error().Err(err).Msg("cannot stop servers")
 		return
 	}
 
 	exitCode = 0
-
-	// err = berth.Init(base.With().Str("unit", "server").Logger())
-	// if err != nil {
-	// 	sentry.CaptureException(err)
-	// 	defer sentry.Flush(5 * time.Second)
-	// 	base.Error().
-	// 		Err(err).
-	// 		Msg("cannot init server")
-	// 	os.Exit(1)
-	// }
 }
 
-func run(srv types.Lifecycle) error {
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-
-	if err := srv.Start(); err != nil {
-		return errors.Wrap(err, "connot start server")
+func start(services ...types.Lifecycle) chan error {
+	ch := make(chan error)
+	var wg sync.WaitGroup
+	wg.Add(len(services))
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+	for _, service := range services {
+		service := service
+		go func() {
+			defer wg.Done()
+			if err := service.Start(); err != nil {
+				ch <- err
+				return
+			}
+		}()
 	}
+	return ch
+}
 
-	<-signals
-	close(signals)
-
-	if err := srv.Stop(); err != nil {
-		return errors.Wrap(err, "cannot stop server")
+func stop(services ...types.Lifecycle) chan error {
+	ch := make(chan error)
+	var wg sync.WaitGroup
+	wg.Add(len(services))
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+	for _, service := range services {
+		service := service
+		go func() {
+			defer wg.Done()
+			if err := service.Stop(); err != nil {
+				ch <- err
+				return
+			}
+		}()
 	}
-
-	return nil
+	return ch
 }

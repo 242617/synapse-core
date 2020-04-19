@@ -64,19 +64,17 @@ func (s *server) Start() error {
 		return fmt.Errorf("cannot listen %s", address)
 	}
 
-	go func() {
-		err := s.srv.Serve(listener)
-		if err != nil {
-			s.log.Error().Err(err).Msg("cannot start serving")
-		}
-	}()
-	s.log.Info().Msg("starting...")
+	s.log.Info().Msg("starting server...")
+	if err = s.srv.Serve(listener); err != nil {
+		s.log.Error().Err(err).Msg("cannot start serving")
+		return err
+	}
 
 	return nil
 }
 
 func (s *server) Stop() error {
-	s.log.Info().Msg("stopping...")
+	s.log.Info().Msg("stopping server...")
 	err := s.srv.Shutdown(context.TODO())
 	return err
 }

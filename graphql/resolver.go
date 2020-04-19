@@ -9,3 +9,7 @@ import "github.com/242617/synapse-core/graphql/model"
 var crawlers = []*model.Crawler{}
 
 type Resolver struct{}
+
+func NewResolver() *Resolver {
+	return &Resolver{}
+}
