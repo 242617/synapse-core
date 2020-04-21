@@ -3,16 +3,9 @@
 package model
 
 type Crawler struct {
-	ID          string `json:"id"`
-	CreatedAt   string `json:"createdAt"`
+	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Certificate string `json:"certificate"`
-}
-
-type Label struct {
-	ID        string `json:"id"`
-	CrawlerID string `json:"crawlerID"`
-	Name      string `json:"name"`
 }
 
 type NewCrawler struct {

@@ -10,10 +10,12 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
+	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 
 	"github.com/242617/synapse-core/berth"
 	"github.com/242617/synapse-core/config"
+	"github.com/242617/synapse-core/db"
 	"github.com/242617/synapse-core/graphql"
 	"github.com/242617/synapse-core/log"
 	"github.com/242617/synapse-core/secret"
@@ -39,9 +41,6 @@ func main() {
 		l.Println(errors.Wrap(err, "cannot init config"))
 		os.Exit(1)
 	}
-
-	l.Println("cfg")
-	l.Println(cfg)
 
 	scrt, err := secret.Init(cfg.Services.Vault)
 	if err != nil {
@@ -74,20 +73,25 @@ func main() {
 		Msg("start")
 	logger := base
 
-	resolver := graphql.NewResolver()
-	srv, err := server.NewServer(cfg.Server, logger.With().Str("unit", "server").Logger(), resolver)
+	db := db.New(cfg.DB, logger.With().Str("unit", "db").Logger())
+	if err := db.Connect(scrt.DBConnection); err != nil {
+		logger.Error().Err(err).Msg("cannot connect to database")
+		os.Exit(1)
+	}
+	defer db.Close()
+
+	resolver := graphql.NewResolver(db)
+	srv, err := server.New(cfg.Server, logger.With().Str("unit", "server").Logger(), resolver)
 	if err != nil {
 		logger.Error().Err(err).Msg("cannot create server")
-		return
+		os.Exit(1)
 	}
 
-	brth, err := berth.NewServer(cfg.Berth, logger.With().Str("unit", "berth").Logger())
+	brth, err := berth.New(cfg.Berth, logger.With().Str("unit", "berth").Logger())
 	if err != nil {
 		sentry.CaptureException(err)
 		defer sentry.Flush(5 * time.Second)
-		base.Error().
-			Err(err).
-			Msg("cannot init server")
+		logger.Error().Err(err).Msg("cannot init server")
 		os.Exit(1)
 	}
 
@@ -101,10 +105,10 @@ func main() {
 
 	select {
 	case err := <-errCh:
-		l.Println("err", err)
 		logger.Error().Err(err).Msg("cannot start servers")
 		return
 	case <-signals:
+		close(errCh)
 		close(signals)
 	}
 

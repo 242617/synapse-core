@@ -1,6 +1,6 @@
 logger:
   level: debug
-berch:
+berth:
   address: ":50051"
 server:
   address: ":8080"

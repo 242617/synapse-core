@@ -10,7 +10,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/242617/synapse-core/graphql/model"
+	"github.com/242617/synapse-core/db/model"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	gqlparser "github.com/vektah/gqlparser/v2"
@@ -45,33 +45,26 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Crawler struct {
 		Certificate func(childComplexity int) int
-		CreatedAt   func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
 	}
 
-	Label struct {
-		CrawlerID func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Name      func(childComplexity int) int
-	}
-
 	Mutation struct {
 		CreateCrawler func(childComplexity int, input model.NewCrawler) int
+		DeleteCrawler func(childComplexity int, id int) int
 	}
 
 	Query struct {
-		Crawlers func(childComplexity int) int
-		Labels   func(childComplexity int) int
+		Crawlers func(childComplexity int, id *int) int
 	}
 }
 
 type MutationResolver interface {
 	CreateCrawler(ctx context.Context, input model.NewCrawler) (*model.Crawler, error)
+	DeleteCrawler(ctx context.Context, id int) (*model.Crawler, error)
 }
 type QueryResolver interface {
-	Crawlers(ctx context.Context) ([]*model.Crawler, error)
-	Labels(ctx context.Context) ([]*model.Label, error)
+	Crawlers(ctx context.Context, id *int) ([]*model.Crawler, error)
 }
 
 type executableSchema struct {
@@ -96,13 +89,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Crawler.Certificate(childComplexity), true
 
-	case "Crawler.createdAt":
-		if e.complexity.Crawler.CreatedAt == nil {
-			break
-		}
-
-		return e.complexity.Crawler.CreatedAt(childComplexity), true
-
 	case "Crawler.id":
 		if e.complexity.Crawler.ID == nil {
 			break
@@ -117,27 +103,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Crawler.Name(childComplexity), true
 
-	case "Label.crawlerID":
-		if e.complexity.Label.CrawlerID == nil {
-			break
-		}
-
-		return e.complexity.Label.CrawlerID(childComplexity), true
-
-	case "Label.id":
-		if e.complexity.Label.ID == nil {
-			break
-		}
-
-		return e.complexity.Label.ID(childComplexity), true
-
-	case "Label.name":
-		if e.complexity.Label.Name == nil {
-			break
-		}
-
-		return e.complexity.Label.Name(childComplexity), true
-
 	case "Mutation.createCrawler":
 		if e.complexity.Mutation.CreateCrawler == nil {
 			break
@@ -150,19 +115,29 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateCrawler(childComplexity, args["input"].(model.NewCrawler)), true
 
+	case "Mutation.deleteCrawler":
+		if e.complexity.Mutation.DeleteCrawler == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteCrawler_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteCrawler(childComplexity, args["id"].(int)), true
+
 	case "Query.crawlers":
 		if e.complexity.Query.Crawlers == nil {
 			break
 		}
 
-		return e.complexity.Query.Crawlers(childComplexity), true
-
-	case "Query.labels":
-		if e.complexity.Query.Labels == nil {
-			break
+		args, err := ec.field_Query_crawlers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
 		}
 
-		return e.complexity.Query.Labels(childComplexity), true
+		return e.complexity.Query.Crawlers(childComplexity, args["id"].(*int)), true
 
 	}
 	return 0, false
@@ -230,20 +205,12 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	&ast.Source{Name: "graphql/schema.graphqls", Input: `type Crawler {
   id: ID!
-  createdAt: String!
   name: String!
   certificate: String!
 }
 
-type Label {
-  id: ID!
-  crawlerID: String!
-  name: String!
-}
-
 type Query {
-  crawlers: [Crawler!]!
-  labels: [Label!]!
+  crawlers(id: ID): [Crawler!]!
 }
 
 input NewCrawler {
@@ -253,6 +220,7 @@ input NewCrawler {
 
 type Mutation {
   createCrawler(input: NewCrawler!): Crawler!
+  deleteCrawler(id: ID!): Crawler!
 }
 `, BuiltIn: false},
 }
@@ -267,12 +235,26 @@ func (ec *executionContext) field_Mutation_createCrawler_args(ctx context.Contex
 	args := map[string]interface{}{}
 	var arg0 model.NewCrawler
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNNewCrawler2githubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐNewCrawler(ctx, tmp)
+		arg0, err = ec.unmarshalNNewCrawler2githubᚗcomᚋ242617ᚋsynapseᚑcoreᚋdbᚋmodelᚐNewCrawler(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteCrawler_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -287,6 +269,20 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_crawlers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalOID2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -355,43 +351,9 @@ func (ec *executionContext) _Crawler_id(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Crawler_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Crawler) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Crawler",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNID2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Crawler_name(ctx context.Context, field graphql.CollectedField, obj *model.Crawler) (ret graphql.Marshaler) {
@@ -462,108 +424,6 @@ func (ec *executionContext) _Crawler_certificate(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Label_id(ctx context.Context, field graphql.CollectedField, obj *model.Label) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Label",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Label_crawlerID(ctx context.Context, field graphql.CollectedField, obj *model.Label) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Label",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CrawlerID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Label_name(ctx context.Context, field graphql.CollectedField, obj *model.Label) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Label",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Name, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Mutation_createCrawler(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -602,7 +462,48 @@ func (ec *executionContext) _Mutation_createCrawler(ctx context.Context, field g
 	}
 	res := resTmp.(*model.Crawler)
 	fc.Result = res
-	return ec.marshalNCrawler2ᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐCrawler(ctx, field.Selections, res)
+	return ec.marshalNCrawler2ᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋdbᚋmodelᚐCrawler(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteCrawler(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteCrawler_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteCrawler(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Crawler)
+	fc.Result = res
+	return ec.marshalNCrawler2ᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋdbᚋmodelᚐCrawler(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_crawlers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -620,9 +521,16 @@ func (ec *executionContext) _Query_crawlers(ctx context.Context, field graphql.C
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_crawlers_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Crawlers(rctx)
+		return ec.resolvers.Query().Crawlers(rctx, args["id"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -636,41 +544,7 @@ func (ec *executionContext) _Query_crawlers(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*model.Crawler)
 	fc.Result = res
-	return ec.marshalNCrawler2ᚕᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐCrawlerᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_labels(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Query",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Labels(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Label)
-	fc.Result = res
-	return ec.marshalNLabel2ᚕᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐLabelᚄ(ctx, field.Selections, res)
+	return ec.marshalNCrawler2ᚕᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋdbᚋmodelᚐCrawlerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1845,11 +1719,6 @@ func (ec *executionContext) _Crawler(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "createdAt":
-			out.Values[i] = ec._Crawler_createdAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "name":
 			out.Values[i] = ec._Crawler_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -1857,43 +1726,6 @@ func (ec *executionContext) _Crawler(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "certificate":
 			out.Values[i] = ec._Crawler_certificate(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var labelImplementors = []string{"Label"}
-
-func (ec *executionContext) _Label(ctx context.Context, sel ast.SelectionSet, obj *model.Label) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, labelImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Label")
-		case "id":
-			out.Values[i] = ec._Label_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "crawlerID":
-			out.Values[i] = ec._Label_crawlerID(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "name":
-			out.Values[i] = ec._Label_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -1925,6 +1757,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = graphql.MarshalString("Mutation")
 		case "createCrawler":
 			out.Values[i] = ec._Mutation_createCrawler(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteCrawler":
+			out.Values[i] = ec._Mutation_deleteCrawler(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -1963,20 +1800,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_crawlers(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "labels":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_labels(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -2256,11 +2079,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNCrawler2githubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐCrawler(ctx context.Context, sel ast.SelectionSet, v model.Crawler) graphql.Marshaler {
+func (ec *executionContext) marshalNCrawler2githubᚗcomᚋ242617ᚋsynapseᚑcoreᚋdbᚋmodelᚐCrawler(ctx context.Context, sel ast.SelectionSet, v model.Crawler) graphql.Marshaler {
 	return ec._Crawler(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCrawler2ᚕᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐCrawlerᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Crawler) graphql.Marshaler {
+func (ec *executionContext) marshalNCrawler2ᚕᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋdbᚋmodelᚐCrawlerᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Crawler) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -2284,7 +2107,7 @@ func (ec *executionContext) marshalNCrawler2ᚕᚖgithubᚗcomᚋ242617ᚋsynaps
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNCrawler2ᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐCrawler(ctx, sel, v[i])
+			ret[i] = ec.marshalNCrawler2ᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋdbᚋmodelᚐCrawler(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2297,7 +2120,7 @@ func (ec *executionContext) marshalNCrawler2ᚕᚖgithubᚗcomᚋ242617ᚋsynaps
 	return ret
 }
 
-func (ec *executionContext) marshalNCrawler2ᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐCrawler(ctx context.Context, sel ast.SelectionSet, v *model.Crawler) graphql.Marshaler {
+func (ec *executionContext) marshalNCrawler2ᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋdbᚋmodelᚐCrawler(ctx context.Context, sel ast.SelectionSet, v *model.Crawler) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2307,12 +2130,12 @@ func (ec *executionContext) marshalNCrawler2ᚖgithubᚗcomᚋ242617ᚋsynapse�
 	return ec._Crawler(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
-	return graphql.UnmarshalID(v)
+func (ec *executionContext) unmarshalNID2int(ctx context.Context, v interface{}) (int, error) {
+	return graphql.UnmarshalInt(v)
 }
 
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
+func (ec *executionContext) marshalNID2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2321,58 +2144,7 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) marshalNLabel2githubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐLabel(ctx context.Context, sel ast.SelectionSet, v model.Label) graphql.Marshaler {
-	return ec._Label(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNLabel2ᚕᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐLabelᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Label) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNLabel2ᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐLabel(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
-func (ec *executionContext) marshalNLabel2ᚖgithubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐLabel(ctx context.Context, sel ast.SelectionSet, v *model.Label) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Label(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNNewCrawler2githubᚗcomᚋ242617ᚋsynapseᚑcoreᚋgraphqlᚋmodelᚐNewCrawler(ctx context.Context, v interface{}) (model.NewCrawler, error) {
+func (ec *executionContext) unmarshalNNewCrawler2githubᚗcomᚋ242617ᚋsynapseᚑcoreᚋdbᚋmodelᚐNewCrawler(ctx context.Context, v interface{}) (model.NewCrawler, error) {
 	return ec.unmarshalInputNewCrawler(ctx, v)
 }
 
@@ -2637,6 +2409,29 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
+}
+
+func (ec *executionContext) unmarshalOID2int(ctx context.Context, v interface{}) (int, error) {
+	return graphql.UnmarshalInt(v)
+}
+
+func (ec *executionContext) marshalOID2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	return graphql.MarshalInt(v)
+}
+
+func (ec *executionContext) unmarshalOID2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOID2int(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalOID2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.marshalOID2int(ctx, sel, *v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

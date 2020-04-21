@@ -14,9 +14,15 @@ Services, technologies and frameworks may be excessive, developing for experienc
 | Concourse  | Build and deploy                  | CI/CD              |
 | Sematext   | Logging                           |                    |
 | Sentry     | Alerts                            |                    |
+| GraphQL    | GUI for configuring               |                    |
+
+# Build
+
+```
+go get github.com/99designs/gqlgen
+```
 
 # Setup
-
 
 ## Setup user
 
@@ -63,4 +69,3 @@ sudo touch /var/log/synapse-core.log
 sudo chown syslog:adm /var/log/synapse-core.log
 sudo systemctl restart rsyslog
 ```
-

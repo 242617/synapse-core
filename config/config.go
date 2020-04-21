@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Logger   LoggerConfig   `yaml:"logger"`
+	DB       DBConfig       `yaml:"db"`
 	Berth    BerthConfig    `yaml:"berth"`
 	Server   ServerConfig   `yaml:"server"`
 	Services ServicesConfig `yaml:"services"`
@@ -16,6 +17,8 @@ type Config struct {
 type LoggerConfig struct {
 	Level string `yaml:"level"`
 }
+
+type DBConfig struct{}
 
 type BerthConfig struct {
 	Address string `yaml:"address"`

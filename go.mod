@@ -7,7 +7,10 @@ require (
 	github.com/getsentry/sentry-go v0.5.1
 	github.com/golang/protobuf v1.3.5
 	github.com/hashicorp/vault/api v1.0.4
+	github.com/huandu/go-sqlbuilder v1.7.0
+	github.com/lib/pq v1.3.0
 	github.com/mattn/go-isatty v0.0.12
+	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.8.1
 	github.com/rs/zerolog v1.18.0
 	github.com/vektah/gqlparser/v2 v2.0.1

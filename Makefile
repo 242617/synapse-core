@@ -20,10 +20,11 @@ config:
 proto:
 	protoc --proto_path api/proto api/proto/system.proto --go_out=plugins=grpc:api
 	protoc --proto_path api/proto api/proto/tasks.proto --go_out=plugins=grpc:api
-	# protoc --proto_path api/proto --go_out=api --plugin grpc api/proto/list.proto
 
 .PHONY: build
 build: config proto
+	go generate ./...
+	# GOARCH=amd64 GOOS=linux
 	go build \
 		-o build/core \
 		-ldflags "\
@@ -43,8 +44,8 @@ run: build
 DOCKER_CONTAINER_NAME := synapse-core
 DOCKER_IMAGE_NAME := 242617/synapse-core
 
-.PHONY: docker-build
-docker-build: config
+docker\:build:
+	make config
 	docker build \
 		--build-arg APPLICATION=${APPLICATION} \
 		--build-arg ENVIRONMENT=${ENVIRONMENT} \
@@ -53,15 +54,15 @@ docker-build: config
 		-t ${DOCKER_IMAGE_NAME} \
 		.
 
-.PHONY: docker-debug
-docker-debug: docker-build
+docker\:debug:
+	make docker\:build
 	docker run \
 		--rm \
 		-p 8080:8080 \
+		-e TOKEN=s.ThaBjyEw5VTI8rha4TQNmxy4 \
 		--name ${DOCKER_CONTAINER_NAME}\
 		${DOCKER_IMAGE_NAME}
 
-.PHONY: docker-save
-docker-save:
+docker\:save:
 	docker save -o ${DOCKER_CONTAINER_NAME}.tar ${DOCKER_IMAGE_NAME}
 	du -h ${DOCKER_CONTAINER_NAME}.tar

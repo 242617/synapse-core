@@ -20,13 +20,14 @@ type server struct {
 	srv *grpc.Server
 }
 
-func NewServer(config config.BerthConfig, logger log.Logger) (types.Lifecycle, error) {
+func New(config config.BerthConfig, logger log.Logger) (types.Lifecycle, error) {
 	s := grpc.NewServer()
 	reflection.Register(s)
 	api.RegisterSystemServer(s, &system.System{})
 	api.RegisterTasksServer(s, &tasks.Tasks{})
 
 	return &server{
+		cfg: config,
 		log: logger,
 		srv: s,
 	}, nil

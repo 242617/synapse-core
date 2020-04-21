@@ -5,30 +5,47 @@ package graphql
 
 import (
 	"context"
-	"fmt"
-	"math/rand"
-	"strconv"
 
+	"github.com/242617/synapse-core/db/model"
 	"github.com/242617/synapse-core/graphql/generated"
-	"github.com/242617/synapse-core/graphql/model"
 )
 
 func (r *mutationResolver) CreateCrawler(ctx context.Context, input model.NewCrawler) (*model.Crawler, error) {
-	crawler := model.Crawler{
-		ID:          strconv.Itoa(rand.Intn(10000)),
+	id, _, err := r.db.CreateCrawler(input.Name, input.Certificate)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Crawler{
+		ID:          id,
 		Name:        input.Name,
 		Certificate: input.Certificate,
+	}, nil
+}
+
+func (r *mutationResolver) DeleteCrawler(ctx context.Context, id int) (*model.Crawler, error) {
+	crawler, err := r.db.GetCrawler(id)
+	if err != nil {
+		return nil, err
 	}
-	crawlers = append(crawlers, &crawler)
-	return &crawler, nil
+	if err := r.db.DeleteCrawler(id); err != nil {
+		return nil, err
+	}
+	return crawler, nil
 }
 
-func (r *queryResolver) Crawlers(ctx context.Context) ([]*model.Crawler, error) {
+func (r *queryResolver) Crawlers(ctx context.Context, id *int) ([]*model.Crawler, error) {
+	if id != nil {
+		crawler, err := r.db.GetCrawler(*id)
+		if err != nil {
+			return nil, err
+		}
+		return []*model.Crawler{crawler}, nil
+	}
+	crawlers, err := r.db.GetCrawlers()
+	if err != nil {
+		return nil, err
+	}
 	return crawlers, nil
-}
-
-func (r *queryResolver) Labels(ctx context.Context) ([]*model.Label, error) {
-	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

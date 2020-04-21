@@ -1,19 +1,11 @@
 type Crawler {
   id: ID!
-  createdAt: String!
   name: String!
   certificate: String!
 }
 
-type Label {
-  id: ID!
-  crawlerID: String!
-  name: String!
-}
-
 type Query {
-  crawlers: [Crawler!]!
-  labels: [Label!]!
+  crawlers(id: ID): [Crawler!]!
 }
 
 input NewCrawler {
@@ -23,4 +15,5 @@ input NewCrawler {
 
 type Mutation {
   createCrawler(input: NewCrawler!): Crawler!
+  deleteCrawler(id: ID!): Crawler!
 }

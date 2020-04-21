@@ -30,7 +30,7 @@ type server struct {
 	gql *handler.Server
 }
 
-func NewServer(config config.ServerConfig, logger log.Logger, resolver generated.ResolverRoot) (types.Lifecycle, error) {
+func New(config config.ServerConfig, logger log.Logger, resolver generated.ResolverRoot) (types.Lifecycle, error) {
 	es := generated.NewExecutableSchema(generated.Config{Resolvers: resolver})
 	gql := handler.New(es)
 	gql.AddTransport(transport.Options{})
