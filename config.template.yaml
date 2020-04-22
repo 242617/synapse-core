@@ -3,7 +3,7 @@ logger:
 berth:
   address: ":50051"
 server:
-  address: ":8080"
+  address: ":8081"
 services:
   vault:
     address: https://hq.chill-out.ru/vault

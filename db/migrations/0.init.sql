@@ -1,5 +1,5 @@
 
-create database "synapse-core";
+create database synapse;
 
 create table crawlers (
     id serial not null,
